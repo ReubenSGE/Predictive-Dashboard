@@ -3,14 +3,13 @@ import pandas as pd
 import numpy as np
 import joblib
 import requests
-from PIL import Image
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 
 # ------------------- MODEL & CONFIG ---------------------
 model = joblib.load("trail_usage_model_daily_with_lags.pkl")
 
-API_KEY = "bcef05a6a7e6e7623f74d7b0ca2b42c0"  # Your OpenWeather API key
+API_KEY = "bcef05a6a7e6e7623f74d7b0ca2b42c0"
 lat, lon = 40.4418, -80.0004  # Pittsburgh center
 
 proximity_miles = {
@@ -26,22 +25,6 @@ proximity_miles = {
     'Multicounter - West Lytle Street': 3.21,
     'Pittsburgh to Millvale': 3.31
 }
-
-# ------------------- STYLING & LOGO ---------------------
-st.set_page_config(layout="wide")
-st.markdown("""
-    <style>
-    body {
-        background-color: #121212;
-        color: #e0e0e0;
-    }
-    .css-1d391kg { background-color: #1e1e1e; }
-    </style>
-""", unsafe_allow_html=True)
-
-st.image("friendsoftheriverfront.jpeg", use_column_width=True)
-
-st.title("🚴‍♂️ Trail Usage Predictor (Friends of the Riverfront)")
 
 # ------------------- WEATHER API ---------------------
 def get_forecast(date_selected):
@@ -68,6 +51,10 @@ def get_forecast(date_selected):
         'Wind speed': np.mean(wind_speeds)
     }
 
+# ------------------- UI ---------------------
+st.set_page_config(layout="wide")
+st.title("🚴‍♂️ Trail Usage Predictor (Friends of the Riverfront)")
+
 # ------------------- SINGLE PREDICTION ---------------------
 st.subheader("📅 Predict Usage for a Specific Day")
 
@@ -79,7 +66,7 @@ weather = get_forecast(date_input)
 if weather:
     st.write("📡 Weather Forecast:", weather)
 else:
-    st.warning("Weather not available — using average assumptions.")
+    st.warning("⚠️ Weather not available — using default values.")
     weather = {
         'Max Temperature (°C)': 20,
         'Precipitation': 0.1,
@@ -102,7 +89,7 @@ features = {
     f'Trail_{trail}': 1
 }
 
-# Build input for model
+# Format input
 model_input = pd.DataFrame([features])
 for col in model.get_booster().feature_names:
     if col not in model_input.columns:
